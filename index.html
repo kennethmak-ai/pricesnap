@@ -219,13 +219,13 @@
 
   /* Store selector */
   .store-row {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
     gap: 8px;
     margin-top: 12px;
-    flex-wrap: wrap;
   }
   .store-chip {
-    padding: 7px 14px;
+    padding: 9px 8px;
     border-radius: 20px;
     border: 1px solid var(--border);
     background: var(--surface);
@@ -234,6 +234,8 @@
     font-size: 12px;
     cursor: pointer;
     transition: all .2s;
+    text-align: center;
+    width: 100%;
   }
   .store-chip.selected {
     background: var(--accent);
@@ -449,13 +451,13 @@
 
   /* ── HISTORY PAGE ── */
   .history-filters {
-    display: flex; gap: 8px; margin-bottom: 14px; overflow-x: auto;
-    scrollbar-width: none; padding-bottom: 2px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 14px;
   }
-  .history-filters::-webkit-scrollbar { display: none; }
   .filter-chip {
-    flex-shrink: 0;
-    padding: 6px 14px;
+    padding: 7px 4px;
     border-radius: 20px;
     border: 1px solid var(--border);
     background: var(--surface);
@@ -464,6 +466,8 @@
     font-size: 11px;
     cursor: pointer;
     transition: all .2s;
+    text-align: center;
+    width: 100%;
   }
   .filter-chip.active { border-color: var(--accent); color: var(--accent); }
 
@@ -728,10 +732,8 @@
     <div class="store-row" id="storeChips">
       <div class="store-chip selected" onclick="selectStore(this,'FairPrice')">FairPrice</div>
       <div class="store-chip" onclick="selectStore(this,'Cold Storage')">Cold Storage</div>
-      <div class="store-chip" onclick="selectStore(this,'Giant')">Giant</div>
       <div class="store-chip" onclick="selectStore(this,'Sheng Siong')">Sheng Siong</div>
-      <div class="store-chip" onclick="selectStore(this,'7-Eleven')">7-Eleven</div>
-      <div class="store-chip" onclick="selectStore(this,'Cheers')">Cheers</div>
+      <div class="store-chip" onclick="selectStore(this,'Giant')">Giant</div>
       <div class="store-chip" onclick="selectStore(this,'523 Main')">523 Main</div>
       <div class="store-chip" onclick="selectStore(this,'523 Sub')">523 Sub</div>
     </div>
@@ -815,10 +817,8 @@
     <div class="filter-chip active" onclick="filterHistory('all',this)">All</div>
     <div class="filter-chip" onclick="filterHistory('FairPrice',this)">FairPrice</div>
     <div class="filter-chip" onclick="filterHistory('Cold Storage',this)">Cold Storage</div>
-    <div class="filter-chip" onclick="filterHistory('Giant',this)">Giant</div>
     <div class="filter-chip" onclick="filterHistory('Sheng Siong',this)">Sheng Siong</div>
-    <div class="filter-chip" onclick="filterHistory('7-Eleven',this)">7-Eleven</div>
-    <div class="filter-chip" onclick="filterHistory('Cheers',this)">Cheers</div>
+    <div class="filter-chip" onclick="filterHistory('Giant',this)">Giant</div>
     <div class="filter-chip" onclick="filterHistory('523 Main',this)">523 Main</div>
     <div class="filter-chip" onclick="filterHistory('523 Sub',this)">523 Sub</div>
   </div>
