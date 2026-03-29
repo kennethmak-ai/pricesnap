@@ -1,0 +1,1269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>PriceSnap</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f0e;
+    --surface: #161918;
+    --surface2: #1e2220;
+    --border: #2a2e2c;
+    --accent: #00e676;
+    --accent2: #00bfa5;
+    --warn: #ffab40;
+    --danger: #ff5252;
+    --text: #e8ede9;
+    --muted: #6b7670;
+    --card-radius: 16px;
+    --font-head: 'Syne', sans-serif;
+    --font-mono: 'DM Mono', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-mono);
+    min-height: 100vh;
+    max-width: 480px;
+    margin: 0 auto;
+    padding-bottom: 90px;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* ── HEADER ── */
+  .app-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 20px 14px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(13,15,14,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+  }
+  .logo-icon {
+    width: 42px;
+    height: 42px;
+    flex-shrink: 0;
+  }
+  .logo-wordmark {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.1;
+  }
+  .logo-wordmark .w1 {
+    font-family: var(--font-head);
+    font-weight: 800;
+    font-size: 16px;
+    letter-spacing: -0.5px;
+    color: var(--text);
+  }
+  .logo-wordmark .w2 {
+    font-family: var(--font-head);
+    font-weight: 800;
+    font-size: 16px;
+    letter-spacing: -0.5px;
+    color: var(--accent);
+  }
+  .settings-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 8px 12px;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 18px;
+    transition: all .2s;
+  }
+  .settings-btn:hover { color: var(--accent); border-color: var(--accent); }
+
+  /* ── TABS ── */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    padding: 12px 16px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab {
+    flex-shrink: 0;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all .2s;
+    white-space: nowrap;
+  }
+  .tab.active {
+    background: var(--accent);
+    color: #000;
+    font-weight: 700;
+  }
+  .tab:not(.active):hover { border-color: var(--border); color: var(--text); }
+
+  /* ── PAGES ── */
+  .page { display: none; padding: 16px; animation: fadeUp .3s ease; }
+  .page.active { display: block; }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+
+  /* ── SCAN PAGE ── */
+  .scan-zone {
+    background: var(--surface);
+    border: 2px dashed var(--border);
+    border-radius: var(--card-radius);
+    padding: 0;
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+    transition: border-color .2s;
+    min-height: 220px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .scan-zone:hover { border-color: var(--accent); }
+  .scan-zone.has-image { border-style: solid; border-color: var(--accent); }
+  .scan-zone input[type=file] { display: none; }
+
+  #previewImg {
+    width: 100%;
+    max-height: 260px;
+    object-fit: cover;
+    display: none;
+    border-radius: 14px;
+  }
+  .scan-placeholder {
+    text-align: center;
+    padding: 32px 20px;
+  }
+  .scan-icon { font-size: 48px; margin-bottom: 12px; }
+  .scan-placeholder p { color: var(--muted); font-size: 13px; line-height: 1.6; }
+  .scan-placeholder strong { color: var(--accent); display: block; font-size: 15px; margin-bottom: 6px; }
+
+  .camera-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--accent);
+    color: #000;
+    border: none;
+    border-radius: 12px;
+    padding: 14px 24px;
+    font-family: var(--font-head);
+    font-weight: 700;
+    font-size: 15px;
+    cursor: pointer;
+    width: 100%;
+    justify-content: center;
+    margin-top: 12px;
+    transition: all .2s;
+    letter-spacing: 0.3px;
+  }
+  .camera-btn:hover { background: #00ff88; transform: translateY(-1px); }
+  .camera-btn:active { transform: translateY(0); }
+  .camera-btn.secondary {
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .camera-btn.secondary:hover { border-color: var(--accent); color: var(--accent); background: var(--surface2); }
+
+  /* Store selector */
+  .store-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+  }
+  .store-chip {
+    padding: 7px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .store-chip.selected {
+    background: var(--accent);
+    color: #000;
+    border-color: var(--accent);
+    font-weight: 600;
+  }
+  .store-input {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    width: 100%;
+    margin-top: 8px;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .store-input:focus { border-color: var(--accent); }
+  .store-input::placeholder { color: var(--muted); }
+
+  /* ── RESULT CARD ── */
+  .result-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--card-radius);
+    padding: 16px;
+    margin-top: 14px;
+    display: none;
+  }
+  .result-card.visible { display: block; animation: fadeUp .3s ease; }
+  .result-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 14px;
+  }
+  .product-name {
+    font-family: var(--font-head);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+    flex: 1;
+    margin-right: 10px;
+  }
+  .brand-tag {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 3px 8px;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .price-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .price-cell {
+    background: var(--surface2);
+    border-radius: 10px;
+    padding: 10px 12px;
+    text-align: center;
+  }
+  .price-cell label {
+    display: block;
+    font-size: 9px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 4px;
+  }
+  .price-cell .val {
+    font-family: var(--font-head);
+    font-size: 15px;
+    font-weight: 700;
+  }
+  .price-cell.highlight { border: 1px solid var(--accent); }
+  .price-cell.highlight .val { color: var(--accent); }
+  .price-cell.strikethrough .val { text-decoration: line-through; color: var(--muted); font-size: 13px; }
+  .price-cell.savings .val { color: var(--warn); }
+
+  .meta-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .meta-badge {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .meta-badge.green { border-color: var(--accent); color: var(--accent); }
+
+  /* editable fields */
+  .edit-fields { margin-top: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .edit-field label { display: block; font-size: 10px; color: var(--muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.6px; }
+  .edit-field input {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 10px;
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    width: 100%;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .edit-field input:focus { border-color: var(--accent); }
+
+  .save-btn {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    border-radius: 10px;
+    padding: 12px;
+    font-family: var(--font-head);
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 12px;
+    transition: all .2s;
+  }
+  .save-btn:hover { background: #00ff88; }
+
+  /* ── COMPARE PAGE ── */
+  .search-bar {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 16px;
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 14px;
+    width: 100%;
+    outline: none;
+    margin-bottom: 14px;
+    transition: border-color .2s;
+  }
+  .search-bar:focus { border-color: var(--accent); }
+  .search-bar::placeholder { color: var(--muted); }
+
+  .product-group {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--card-radius);
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+  .product-group-header {
+    padding: 14px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    background: var(--surface2);
+  }
+  .product-group-header:hover { background: var(--border); }
+  .group-name { font-family: var(--font-head); font-size: 14px; font-weight: 700; }
+  .group-meta { font-size: 11px; color: var(--muted); }
+  .group-count { background: var(--accent); color: #000; border-radius: 12px; padding: 2px 8px; font-size: 11px; font-weight: 700; }
+
+  .price-entry {
+    padding: 12px 16px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: background .15s;
+  }
+  .price-entry:hover { background: var(--surface2); }
+  .rank-badge {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-head);
+    font-weight: 800;
+    font-size: 13px;
+    flex-shrink: 0;
+  }
+  .rank-1 { background: var(--accent); color: #000; }
+  .rank-2 { background: var(--surface2); color: var(--warn); border: 1px solid var(--warn); }
+  .rank-3 { background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
+  .rank-other { background: var(--surface2); color: var(--muted); border: 1px solid var(--border); font-size: 11px; }
+
+  .entry-store { flex: 1; }
+  .entry-store-name { font-size: 13px; font-weight: 500; color: var(--text); }
+  .entry-store-date { font-size: 11px; color: var(--muted); }
+
+  .entry-prices { text-align: right; }
+  .entry-cpu { font-family: var(--font-head); font-size: 14px; font-weight: 700; color: var(--accent); }
+  .entry-op { font-size: 11px; color: var(--muted); }
+  .entry-disc { font-size: 12px; color: var(--warn); }
+  .best-label { font-size: 10px; color: var(--accent); font-weight: 700; letter-spacing: 0.5px; }
+
+  .savings-bar {
+    padding: 10px 16px;
+    background: rgba(0,230,118,0.06);
+    border-top: 1px solid rgba(0,230,118,0.15);
+    font-size: 12px;
+    color: var(--accent);
+    text-align: center;
+  }
+
+  /* ── HISTORY PAGE ── */
+  .history-filters {
+    display: flex; gap: 8px; margin-bottom: 14px; overflow-x: auto;
+    scrollbar-width: none; padding-bottom: 2px;
+  }
+  .history-filters::-webkit-scrollbar { display: none; }
+  .filter-chip {
+    flex-shrink: 0;
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .filter-chip.active { border-color: var(--accent); color: var(--accent); }
+
+  .history-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 10px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    cursor: pointer;
+    transition: border-color .15s;
+  }
+  .history-item:hover { border-color: var(--accent); }
+  .history-thumb {
+    width: 52px; height: 52px;
+    border-radius: 8px;
+    background: var(--surface2);
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+    overflow: hidden;
+  }
+  .history-thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .history-info { flex: 1; }
+  .history-product { font-family: var(--font-head); font-size: 13px; font-weight: 700; margin-bottom: 3px; }
+  .history-meta { font-size: 11px; color: var(--muted); }
+  .history-price { text-align: right; }
+  .history-cpu { font-family: var(--font-head); font-size: 14px; font-weight: 700; color: var(--accent); }
+  .history-store { font-size: 11px; color: var(--muted); }
+  .best-flag { font-size: 10px; color: var(--accent); font-weight: 700; }
+
+  /* ── SETTINGS PAGE ── */
+  .settings-section { margin-bottom: 24px; }
+  .settings-title {
+    font-family: var(--font-head);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+    padding-left: 4px;
+  }
+  .settings-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--card-radius);
+    overflow: hidden;
+  }
+  .settings-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background .15s;
+  }
+  .settings-row:last-child { border-bottom: none; }
+  .settings-row:hover { background: var(--surface2); }
+  .settings-icon { font-size: 20px; width: 32px; text-align: center; }
+  .settings-label { flex: 1; }
+  .settings-label strong { display: block; font-size: 14px; color: var(--text); }
+  .settings-label span { font-size: 12px; color: var(--muted); }
+  .settings-value { font-size: 12px; color: var(--muted); }
+
+  .api-input-wrap { padding: 14px 16px; }
+  .api-input {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    width: 100%;
+    outline: none;
+    margin-bottom: 10px;
+    transition: border-color .2s;
+  }
+  .api-input:focus { border-color: var(--accent); }
+  .api-input::placeholder { color: var(--muted); }
+
+  /* ── NAV BAR ── */
+  .nav-bar {
+    position: fixed;
+    bottom: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 480px;
+    background: rgba(13,15,14,0.96);
+    backdrop-filter: blur(16px);
+    border-top: 1px solid var(--border);
+    display: flex;
+    z-index: 200;
+    padding: 8px 0 12px;
+  }
+  .nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    padding: 6px 0;
+    transition: all .2s;
+  }
+  .nav-item .nav-icon { font-size: 22px; transition: transform .2s; }
+  .nav-item .nav-label { font-size: 10px; color: var(--muted); font-weight: 500; transition: color .2s; }
+  .nav-item.active .nav-label { color: var(--accent); }
+  .nav-item.active .nav-icon { transform: translateY(-2px); }
+  .nav-scan {
+    background: var(--accent);
+    border-radius: 50%;
+    width: 52px; height: 52px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+    margin-top: -20px;
+    box-shadow: 0 0 20px rgba(0,230,118,0.4);
+    transition: all .2s;
+  }
+  .nav-item:hover .nav-scan { transform: translateY(-4px); box-shadow: 0 4px 24px rgba(0,230,118,0.5); }
+  .nav-scan-wrap { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+
+  /* ── LOADING OVERLAY ── */
+  .loading-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 500;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 16px;
+    backdrop-filter: blur(4px);
+  }
+  .loading-overlay.visible { display: flex; }
+  .spinner {
+    width: 48px; height: 48px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin .8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text { color: var(--accent); font-family: var(--font-head); font-size: 15px; font-weight: 700; }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed;
+    bottom: 90px;
+    left: 50%; transform: translateX(-50%) translateY(20px);
+    background: var(--surface2);
+    border: 1px solid var(--accent);
+    border-radius: 10px;
+    padding: 10px 20px;
+    font-size: 13px;
+    color: var(--accent);
+    font-weight: 600;
+    opacity: 0;
+    transition: all .3s;
+    z-index: 400;
+    white-space: nowrap;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ── EMPTY STATES ── */
+  .empty-state {
+    text-align: center;
+    padding: 48px 24px;
+    color: var(--muted);
+  }
+  .empty-state .empty-icon { font-size: 48px; margin-bottom: 14px; opacity: 0.5; }
+  .empty-state p { font-size: 13px; line-height: 1.6; }
+  .empty-state strong { color: var(--text); display: block; margin-bottom: 6px; font-family: var(--font-head); font-size: 16px; }
+
+  .section-label {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    font-weight: 600;
+    margin: 16px 0 8px;
+  }
+  .divider { height: 1px; background: var(--border); margin: 12px 0; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="app-header">
+  <div class="logo">
+    <svg class="logo-icon" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+      <!-- Tag body: visible fill + bright stroke -->
+      <path d="M14,40 L30,14 L66,14 L66,66 L30,66 Z" fill="#1e2a24" stroke="#4a6055" stroke-width="2" stroke-linejoin="round"/>
+      <!-- Tag notch hole -->
+      <circle cx="21" cy="40" r="5" fill="#0d0f0e" stroke="#4a6055" stroke-width="1.5"/>
+      <!-- Price lines (muted white) -->
+      <line x1="33" y1="25" x2="58" y2="25" stroke="#6b8c7a" stroke-width="2" stroke-linecap="round"/>
+      <line x1="33" y1="33" x2="50" y2="33" stroke="#6b8c7a" stroke-width="2" stroke-linecap="round"/>
+      <!-- Discount highlight (bright green) -->
+      <rect x="32" y="39" width="27" height="9" rx="3" fill="#00e676" opacity="0.18"/>
+      <line x1="34" y1="43" x2="57" y2="43" stroke="#00e676" stroke-width="2.5" stroke-linecap="round"/>
+      <!-- Camera lens outer ring (accent green) -->
+      <circle cx="57" cy="21" r="18" fill="#0d2018" stroke="#00e676" stroke-width="2"/>
+      <!-- Lens mid ring -->
+      <circle cx="57" cy="21" r="12" fill="#0d1a14" stroke="#1a3d2a" stroke-width="1.2"/>
+      <!-- Lens inner -->
+      <circle cx="57" cy="21" r="7" fill="#091410"/>
+      <!-- Lens centre dot -->
+      <circle cx="57" cy="21" r="3" fill="#00e676"/>
+      <!-- Lens sheen -->
+      <circle cx="52" cy="16" r="2.2" fill="none" stroke="#00e676" stroke-width="0.9" opacity="0.55"/>
+      <!-- Spark lines -->
+      <line x1="57" y1="0"  x2="57" y2="4"  stroke="#00e676" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
+      <line x1="75" y1="3"  x2="72" y2="6"  stroke="#00e676" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+      <line x1="79" y1="21" x2="75" y2="21" stroke="#00e676" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
+    </svg>
+    <div class="logo-wordmark">
+      <span class="w1">Price</span>
+      <span class="w2">Snap</span>
+    </div>
+  </div>
+  <button class="settings-btn" onclick="switchPage('settings')">⚙️</button>
+</header>
+
+<!-- TABS (for Scan page sub-states) -->
+<div class="tabs" id="scanTabs" style="display:none">
+  <button class="tab active" onclick="switchScanTab('snap')">📸 Snap</button>
+  <button class="tab" onclick="switchScanTab('review')">📋 Review</button>
+</div>
+
+<!-- PAGES -->
+<div id="page-scan" class="page active">
+
+  <!-- Snap sub-tab -->
+  <div id="scanSnap">
+    <div class="section-label">Store / Location</div>
+    <div class="store-row" id="storeChips">
+      <div class="store-chip selected" onclick="selectStore(this,'FairPrice')">FairPrice</div>
+      <div class="store-chip" onclick="selectStore(this,'Cold Storage')">Cold Storage</div>
+      <div class="store-chip" onclick="selectStore(this,'Giant')">Giant</div>
+      <div class="store-chip" onclick="selectStore(this,'Sheng Siong')">Sheng Siong</div>
+      <div class="store-chip" onclick="selectStore(this,'7-Eleven')">7-Eleven</div>
+      <div class="store-chip" onclick="selectStore(this,'Cheers')">Cheers</div>
+    </div>
+    <input type="text" class="store-input" id="customStore" placeholder="Or type store name…" oninput="setCustomStore(this.value)">
+
+    <div class="section-label" style="margin-top:16px">Product Photo</div>
+    <div class="scan-zone" id="scanZone" onclick="document.getElementById('fileInput').click()">
+      <div class="scan-placeholder" id="scanPlaceholder">
+        <div class="scan-icon">🏷️</div>
+        <strong>Tap to take photo or upload</strong>
+        <p>Point at a price tag, shelf label, or product packaging</p>
+      </div>
+      <img id="previewImg" alt="preview">
+      <input type="file" id="fileInput" accept="image/*" capture="environment" onchange="handleImage(event)">
+    </div>
+
+    <button class="camera-btn" onclick="document.getElementById('fileInput').click()" style="margin-top:12px">
+      📷 Take Photo
+    </button>
+    <button class="camera-btn secondary" id="analyseBtn" onclick="analyseImage()" style="margin-top:8px;display:none">
+      🔍 Analyse Price Tag
+    </button>
+  </div>
+
+  <!-- Result card -->
+  <div class="result-card" id="resultCard">
+    <div class="result-header">
+      <div class="product-name" id="rProductName">—</div>
+      <div class="brand-tag" id="rBrand">—</div>
+    </div>
+    <div class="price-row">
+      <div class="price-cell strikethrough">
+        <label>Orig. Price</label>
+        <div class="val" id="rOP">—</div>
+      </div>
+      <div class="price-cell highlight">
+        <label>Disc. Price</label>
+        <div class="val" id="rDP">—</div>
+      </div>
+      <div class="price-cell savings">
+        <label>Savings</label>
+        <div class="val" id="rSav">—</div>
+      </div>
+    </div>
+    <div class="meta-row">
+      <div class="meta-badge green" id="rCPU">— /unit</div>
+      <div class="meta-badge" id="rQty">—</div>
+      <div class="meta-badge" id="rCat">—</div>
+    </div>
+    <div class="divider"></div>
+    <div class="section-label">Confirm / Adjust Details</div>
+    <div class="edit-fields">
+      <div class="edit-field">
+        <label>Orig. Price ($)</label>
+        <input type="number" id="eOP" step="0.01" placeholder="0.00" oninput="recalc()">
+      </div>
+      <div class="edit-field">
+        <label>Disc. Price ($)</label>
+        <input type="number" id="eDP" step="0.01" placeholder="0.00" oninput="recalc()">
+      </div>
+      <div class="edit-field">
+        <label>Qty / Weight</label>
+        <input type="text" id="eQty" placeholder="e.g. 500g">
+      </div>
+      <div class="edit-field">
+        <label>Unit Type</label>
+        <input type="text" id="eUnit" placeholder="e.g. per 100g">
+      </div>
+    </div>
+    <button class="save-btn" onclick="saveEntry()">💾 Save to Compare</button>
+  </div>
+</div>
+
+<div id="page-compare" class="page">
+  <input type="text" class="search-bar" placeholder="🔍 Search product…" oninput="filterCompare(this.value)" id="compareSearch">
+  <div id="compareList"></div>
+</div>
+
+<div id="page-history" class="page">
+  <div class="history-filters">
+    <div class="filter-chip active" onclick="filterHistory('all',this)">All</div>
+    <div class="filter-chip" onclick="filterHistory('FairPrice',this)">FairPrice</div>
+    <div class="filter-chip" onclick="filterHistory('Cold Storage',this)">Cold Storage</div>
+    <div class="filter-chip" onclick="filterHistory('Giant',this)">Giant</div>
+    <div class="filter-chip" onclick="filterHistory('Sheng Siong',this)">Sheng Siong</div>
+  </div>
+  <div id="historyList"></div>
+</div>
+
+<div id="page-settings" class="page">
+  <div class="settings-section">
+    <div class="settings-title">API Configuration</div>
+    <div class="settings-card">
+      <div class="api-input-wrap">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:8px;">Gemini API Key (stored locally, never uploaded)</div>
+        <input type="password" class="api-input" id="apiKeyInput" placeholder="AIza…" value="">
+        <button class="save-btn" onclick="saveApiKey()" style="margin-top:0">Save API Key</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="settings-section">
+    <div class="settings-title">Preferences</div>
+    <div class="settings-card">
+      <div class="settings-row" onclick="toggleUnitPref()">
+        <div class="settings-icon">⚖️</div>
+        <div class="settings-label">
+          <strong>Compare by</strong>
+          <span>How to rank prices</span>
+        </div>
+        <div class="settings-value" id="unitPrefLabel">Per Unit Weight</div>
+      </div>
+      <div class="settings-row" onclick="clearData()">
+        <div class="settings-icon">🗑️</div>
+        <div class="settings-label">
+          <strong>Clear All Data</strong>
+          <span>Remove all saved entries</span>
+        </div>
+        <div class="settings-value" id="entryCount">0 entries</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="settings-section">
+    <div class="settings-title">About</div>
+    <div class="settings-card">
+      <div class="settings-row">
+        <div class="settings-icon">📱</div>
+        <div class="settings-label">
+          <strong>PriceSnap</strong>
+          <span>v1.0.0 · Powered by Gemini Vision</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- NAV BAR -->
+<nav class="nav-bar">
+  <div class="nav-item active" id="nav-history" onclick="switchPage('history')">
+    <div class="nav-icon">📋</div>
+    <div class="nav-label">History</div>
+  </div>
+  <div class="nav-item" id="nav-compare" onclick="switchPage('compare')">
+    <div class="nav-icon">📊</div>
+    <div class="nav-label">Compare</div>
+  </div>
+  <div class="nav-scan-wrap" onclick="switchPage('scan')">
+    <div class="nav-scan">
+      <svg width="26" height="26" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+        <path d="M14,40 L30,16 L62,16 L62,64 L30,64 Z" fill="none" stroke="#000" stroke-width="5" stroke-linejoin="round"/>
+        <circle cx="20" cy="40" r="5" fill="#000"/>
+        <line x1="33" y1="38" x2="54" y2="38" stroke="#000" stroke-width="4" stroke-linecap="round"/>
+        <circle cx="57" cy="22" r="16" fill="none" stroke="#000" stroke-width="4"/>
+        <circle cx="57" cy="22" r="7"  fill="none" stroke="#000" stroke-width="3"/>
+        <circle cx="57" cy="22" r="2.5" fill="#000"/>
+      </svg>
+    </div>
+    <div class="nav-label" style="font-size:10px;color:var(--accent);font-weight:700;">SNAP</div>
+  </div>
+  <div class="nav-item" id="nav-settings" onclick="switchPage('settings')">
+    <div class="nav-icon">⚙️</div>
+    <div class="nav-label">Settings</div>
+  </div>
+  <div style="flex:1"></div>
+</nav>
+
+<!-- LOADING -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <div class="loading-text" id="loadingText">Analysing price tag…</div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── STATE ──
+let db = JSON.parse(localStorage.getItem('pricesnap_db') || '[]');
+let selectedStore = 'FairPrice';
+let currentImage = null;
+let currentResult = null;
+let unitPref = localStorage.getItem('pricesnap_unitpref') || 'weight';
+
+// ── NAVIGATION ──
+function switchPage(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('scanTabs').style.display = 'none';
+  document.getElementById('page-' + page).classList.add('active');
+  const navEl = document.getElementById('nav-' + page);
+  if (navEl) navEl.classList.add('active');
+  if (page === 'compare') renderCompare();
+  if (page === 'history') renderHistory('all');
+  if (page === 'settings') { loadSettings(); }
+}
+
+// ── STORE SELECTION ──
+function selectStore(el, name) {
+  document.querySelectorAll('.store-chip').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedStore = name;
+  document.getElementById('customStore').value = '';
+}
+function setCustomStore(val) {
+  if (val.trim()) {
+    document.querySelectorAll('.store-chip').forEach(c => c.classList.remove('selected'));
+    selectedStore = val.trim();
+  }
+}
+
+// ── IMAGE HANDLING ──
+function handleImage(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    currentImage = ev.target.result;
+    const img = document.getElementById('previewImg');
+    img.src = currentImage;
+    img.style.display = 'block';
+    document.getElementById('scanPlaceholder').style.display = 'none';
+    document.getElementById('scanZone').classList.add('has-image');
+    document.getElementById('analyseBtn').style.display = 'flex';
+  };
+  reader.readAsDataURL(file);
+}
+
+// ── GEMINI ANALYSIS ──
+async function analyseImage() {
+  const apiKey = localStorage.getItem('pricesnap_apikey');
+  if (!apiKey) { showToast('⚠️ Add Gemini API key in Settings first'); switchPage('settings'); return; }
+  if (!currentImage) { showToast('⚠️ No image selected'); return; }
+
+  showLoading('Analysing price tag…');
+
+  const base64 = currentImage.split(',')[1];
+  const mimeType = currentImage.split(';')[0].split(':')[1];
+
+  const prompt = `You are a grocery price extraction assistant. Analyse this image of a price tag, shelf label, or product packaging from a Singapore supermarket or convenience store.
+
+Extract and return ONLY a valid JSON object with these fields:
+{
+  "productName": "full product name",
+  "brand": "brand name or empty string",
+  "category": "e.g. Dairy, Beverages, Snacks, Household, Personal Care, Produce, Meat, Frozen, Canned, etc.",
+  "quantity": "e.g. 500g, 1L, 6pcs, etc.",
+  "unitType": "e.g. per 100g, per piece, per 100ml",
+  "unitQty": number (the numeric quantity for CPU calc, e.g. 500 for 500g),
+  "unitMeasure": "g, ml, pcs, etc.",
+  "originalPrice": number or null (SGD),
+  "discountedPrice": number or null (SGD, null if no discount),
+  "confidence": "high/medium/low"
+}
+
+If you cannot read a field clearly, use null. Do not include markdown or code fences, just raw JSON.`;
+
+  try {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{
+          parts: [
+            { inlineData: { mimeType, data: base64 } },
+            { text: prompt }
+          ]
+        }],
+        generationConfig: { temperature: 0.1, maxOutputTokens: 512 }
+      })
+    });
+
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+    let text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    text = text.replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(text);
+    hideLoading();
+    populateResult(parsed);
+  } catch (err) {
+    hideLoading();
+    showToast('❌ ' + (err.message || 'Analysis failed'));
+  }
+}
+
+function populateResult(r) {
+  currentResult = r;
+
+  const op = r.originalPrice;
+  const dp = r.discountedPrice || op;
+  const effectivePrice = dp || op || 0;
+
+  // CPU calculation
+  let cpu = null;
+  let cpuLabel = '—';
+  if (effectivePrice && r.unitQty && r.unitQty > 0) {
+    if (r.unitMeasure === 'g' || r.unitMeasure === 'ml') {
+      cpu = (effectivePrice / r.unitQty) * 100;
+      cpuLabel = `$${cpu.toFixed(3)} / 100${r.unitMeasure}`;
+    } else {
+      cpu = effectivePrice / (r.unitQty || 1);
+      cpuLabel = `$${cpu.toFixed(3)} / ${r.unitMeasure || 'unit'}`;
+    }
+  }
+
+  const savings = (op && dp && op > dp) ? (op - dp).toFixed(2) : null;
+
+  document.getElementById('rProductName').textContent = r.productName || 'Unknown Product';
+  document.getElementById('rBrand').textContent = r.brand || 'Unbranded';
+  document.getElementById('rOP').textContent = op ? `$${op.toFixed(2)}` : '—';
+  document.getElementById('rDP').textContent = dp ? `$${dp.toFixed(2)}` : '—';
+  document.getElementById('rSav').textContent = savings ? `-$${savings}` : '—';
+  document.getElementById('rCPU').textContent = cpuLabel;
+  document.getElementById('rQty').textContent = r.quantity || '—';
+  document.getElementById('rCat').textContent = r.category || '—';
+
+  document.getElementById('eOP').value = op || '';
+  document.getElementById('eDP').value = dp || '';
+  document.getElementById('eQty').value = r.quantity || '';
+  document.getElementById('eUnit').value = r.unitType || '';
+
+  document.getElementById('resultCard').classList.add('visible');
+
+  // store interim for recalc
+  currentResult._cpu = cpu;
+  currentResult._cpuLabel = cpuLabel;
+}
+
+function recalc() {
+  const op = parseFloat(document.getElementById('eOP').value) || 0;
+  const dp = parseFloat(document.getElementById('eDP').value) || op;
+  const savings = (op && dp && op < op) ? (op - dp).toFixed(2) : null;
+  document.getElementById('rOP').textContent = op ? `$${op.toFixed(2)}` : '—';
+  document.getElementById('rDP').textContent = dp ? `$${dp.toFixed(2)}` : '—';
+  document.getElementById('rSav').textContent = savings ? `-$${savings}` : '—';
+}
+
+// ── SAVE ENTRY ──
+function saveEntry() {
+  if (!currentResult) { showToast('⚠️ No result to save'); return; }
+
+  const op = parseFloat(document.getElementById('eOP').value) || currentResult.originalPrice || 0;
+  const dp = parseFloat(document.getElementById('eDP').value) || op;
+  const qty = document.getElementById('eQty').value || currentResult.quantity || '';
+  const unitType = document.getElementById('eUnit').value || currentResult.unitType || '';
+
+  let cpu = null;
+  if (dp && currentResult.unitQty) {
+    if (['g','ml'].includes(currentResult.unitMeasure)) {
+      cpu = (dp / currentResult.unitQty) * 100;
+    } else {
+      cpu = dp / (currentResult.unitQty || 1);
+    }
+  }
+
+  const entry = {
+    id: Date.now(),
+    productName: currentResult.productName || 'Unknown',
+    brand: currentResult.brand || '',
+    category: currentResult.category || '',
+    quantity: qty,
+    unitType: unitType,
+    unitQty: currentResult.unitQty,
+    unitMeasure: currentResult.unitMeasure,
+    originalPrice: op,
+    discountedPrice: dp,
+    cpu: cpu,
+    store: selectedStore,
+    date: new Date().toLocaleDateString('en-SG', { day:'2-digit', month:'short', year:'numeric' }),
+    timestamp: Date.now(),
+    image: currentImage
+  };
+
+  db.push(entry);
+  localStorage.setItem('pricesnap_db', JSON.stringify(db));
+  showToast('✅ Saved! View in Compare tab');
+  document.getElementById('resultCard').classList.remove('visible');
+  document.getElementById('previewImg').style.display = 'none';
+  document.getElementById('scanPlaceholder').style.display = 'block';
+  document.getElementById('analyseBtn').style.display = 'none';
+  document.getElementById('scanZone').classList.remove('has-image');
+  currentImage = null;
+  currentResult = null;
+}
+
+// ── COMPARE ──
+function renderCompare(filter) {
+  const list = document.getElementById('compareList');
+  const search = (filter || document.getElementById('compareSearch')?.value || '').toLowerCase();
+
+  if (db.length === 0) {
+    list.innerHTML = `<div class="empty-state"><div class="empty-icon">📊</div><strong>Nothing to compare yet</strong><p>Snap some price tags first and they'll appear here, ranked by best value.</p></div>`;
+    return;
+  }
+
+  // Group by product name (fuzzy: lowercase, trim)
+  const groups = {};
+  db.forEach(e => {
+    const key = (e.productName + '|' + e.brand + '|' + e.quantity).toLowerCase();
+    if (!groups[key]) groups[key] = { name: e.productName, brand: e.brand, qty: e.quantity, category: e.category, entries: [] };
+    groups[key].entries.push(e);
+  });
+
+  let html = '';
+  Object.values(groups).forEach(g => {
+    if (search && !g.name.toLowerCase().includes(search) && !g.brand.toLowerCase().includes(search)) return;
+
+    // sort by cpu (or discountedPrice if no cpu)
+    g.entries.sort((a, b) => {
+      const av = a.cpu !== null ? a.cpu : a.discountedPrice;
+      const bv = b.cpu !== null ? b.cpu : b.discountedPrice;
+      return av - bv;
+    });
+
+    const best = g.entries[0];
+    const worst = g.entries[g.entries.length - 1];
+    const saving = best.discountedPrice && worst.discountedPrice
+      ? (worst.discountedPrice - best.discountedPrice).toFixed(2)
+      : null;
+
+    html += `<div class="product-group">
+      <div class="product-group-header">
+        <div>
+          <div class="group-name">${g.name}</div>
+          <div class="group-meta">${g.brand ? g.brand + ' · ' : ''}${g.qty || ''}</div>
+        </div>
+        <span class="group-count">${g.entries.length}</span>
+      </div>`;
+
+    g.entries.forEach((e, i) => {
+      const rank = i + 1;
+      const rankClass = rank <= 3 ? `rank-${rank}` : 'rank-other';
+      const cpuText = e.cpu !== null ? `$${e.cpu.toFixed(3)} / 100${e.unitMeasure || 'u'}` : (e.discountedPrice ? `$${e.discountedPrice.toFixed(2)}` : '—');
+      html += `<div class="price-entry">
+        <div class="rank-badge ${rankClass}">${rank}</div>
+        <div class="entry-store">
+          <div class="entry-store-name">${e.store}</div>
+          <div class="entry-store-date">${e.date}</div>
+          ${rank === 1 ? `<div class="best-label">★ BEST BUY</div>` : ''}
+        </div>
+        <div class="entry-prices">
+          <div class="entry-cpu">${cpuText}</div>
+          ${e.originalPrice !== e.discountedPrice ? `<div class="entry-op">OP: $${e.originalPrice?.toFixed(2) || '—'}</div>` : ''}
+          <div class="entry-disc">$${e.discountedPrice?.toFixed(2) || '—'}</div>
+        </div>
+      </div>`;
+    });
+
+    if (saving && parseFloat(saving) > 0) {
+      html += `<div class="savings-bar">💰 Buy at ${best.store} and save $${saving} vs ${worst.store}</div>`;
+    }
+    html += `</div>`;
+  });
+
+  list.innerHTML = html || `<div class="empty-state"><div class="empty-icon">🔍</div><strong>No matches</strong><p>Try a different search term.</p></div>`;
+}
+
+function filterCompare(val) { renderCompare(val); }
+
+// ── HISTORY ──
+function renderHistory(storeFilter) {
+  const list = document.getElementById('historyList');
+  const filtered = storeFilter === 'all' ? db : db.filter(e => e.store === storeFilter);
+  const sorted = [...filtered].sort((a, b) => b.timestamp - a.timestamp);
+
+  if (sorted.length === 0) {
+    list.innerHTML = `<div class="empty-state">
+      <svg width="90" height="90" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" style="margin-bottom:14px;opacity:0.4">
+        <path d="M16,40 L32,16 L68,16 L68,64 L32,64 Z" fill="#161918" stroke="#2a2e2c" stroke-width="1.5"/>
+        <circle cx="22" cy="40" r="5.5" fill="#0d0f0e" stroke="#2a2e2c" stroke-width="1.2"/>
+        <line x1="34" y1="26" x2="60" y2="26" stroke="#2a2e2c" stroke-width="1.8" stroke-linecap="round"/>
+        <line x1="34" y1="33" x2="54" y2="33" stroke="#2a2e2c" stroke-width="1.8" stroke-linecap="round"/>
+        <line x1="35" y1="43" x2="59" y2="43" stroke="#00e676" stroke-width="2.2" stroke-linecap="round"/>
+        <circle cx="58" cy="22" r="18" fill="#0d0f0e" stroke="#00e676" stroke-width="1.8"/>
+        <circle cx="58" cy="22" r="13" fill="#161918" stroke="#1e2220" stroke-width="1"/>
+        <circle cx="58" cy="22" r="8"  fill="#0d0f0e"/>
+        <circle cx="58" cy="22" r="3"  fill="#00e676" opacity="0.9"/>
+      </svg>
+      <strong>No entries yet</strong>
+      <p>Tap <strong style="color:var(--accent)">SNAP</strong> to photograph a price tag and start building your price database.</p>
+    </div>`;
+    return;
+  }
+
+  // rank by product group
+  const ranks = {};
+  db.forEach(e => {
+    const key = (e.productName + e.brand + e.quantity).toLowerCase();
+    if (!ranks[key]) ranks[key] = [];
+    ranks[key].push(e);
+  });
+  Object.values(ranks).forEach(arr => {
+    arr.sort((a,b) => (a.cpu||a.discountedPrice) - (b.cpu||b.discountedPrice));
+    arr.forEach((e, i) => e._rank = i + 1);
+  });
+
+  list.innerHTML = sorted.map(e => {
+    const cpuText = e.cpu !== null ? `$${e.cpu.toFixed(3)}/100${e.unitMeasure||'u'}` : `$${e.discountedPrice?.toFixed(2)||'—'}`;
+    const thumb = e.image ? `<img src="${e.image}" alt="">` : getCategoryEmoji(e.category);
+    return `<div class="history-item" onclick="showEntryDetail(${e.id})">
+      <div class="history-thumb">${e.image ? `<img src="${e.image}">` : getCategoryEmoji(e.category)}</div>
+      <div class="history-info">
+        <div class="history-product">${e.productName}</div>
+        <div class="history-meta">${e.brand ? e.brand + ' · ' : ''}${e.quantity || ''} · ${e.category || ''}</div>
+        ${e._rank === 1 ? `<div class="best-flag">★ BEST PRICE in group</div>` : ''}
+      </div>
+      <div class="history-price">
+        <div class="history-cpu">${cpuText}</div>
+        <div class="history-store">${e.store}</div>
+        <div style="font-size:11px;color:var(--muted)">${e.date}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function filterHistory(store, el) {
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderHistory(store);
+}
+
+function getCategoryEmoji(cat) {
+  const map = { Dairy:'🧀', Beverages:'🥤', Snacks:'🍿', Produce:'🥦', Meat:'🥩', Frozen:'🧊', Canned:'🥫', Household:'🧹', 'Personal Care':'🧴', Bakery:'🍞' };
+  return map[cat] || '🛒';
+}
+
+function showEntryDetail(id) {
+  // future: modal detail view
+  showToast('📋 Entry detail coming soon');
+}
+
+// ── SETTINGS ──
+function loadSettings() {
+  const key = localStorage.getItem('pricesnap_apikey') || '';
+  document.getElementById('apiKeyInput').value = key;
+  document.getElementById('unitPrefLabel').textContent = unitPref === 'weight' ? 'Per Unit Weight' : 'Discounted Price';
+  document.getElementById('entryCount').textContent = db.length + ' entries';
+}
+
+function saveApiKey() {
+  const val = document.getElementById('apiKeyInput').value.trim();
+  if (!val) { showToast('⚠️ Enter a valid API key'); return; }
+  localStorage.setItem('pricesnap_apikey', val);
+  showToast('✅ API key saved');
+}
+
+function toggleUnitPref() {
+  unitPref = unitPref === 'weight' ? 'price' : 'weight';
+  localStorage.setItem('pricesnap_unitpref', unitPref);
+  document.getElementById('unitPrefLabel').textContent = unitPref === 'weight' ? 'Per Unit Weight' : 'Discounted Price';
+  showToast('Updated comparison method');
+}
+
+function clearData() {
+  if (confirm('Clear all saved price entries? This cannot be undone.')) {
+    db = [];
+    localStorage.removeItem('pricesnap_db');
+    showToast('🗑️ All data cleared');
+    document.getElementById('entryCount').textContent = '0 entries';
+  }
+}
+
+// ── UTILS ──
+function showLoading(msg) {
+  document.getElementById('loadingText').textContent = msg || 'Loading…';
+  document.getElementById('loadingOverlay').classList.add('visible');
+}
+function hideLoading() {
+  document.getElementById('loadingOverlay').classList.remove('visible');
+}
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ── INIT ──
+switchPage('history');
+</script>
+</body>
+</html>
