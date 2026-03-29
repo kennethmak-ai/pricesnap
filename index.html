@@ -29,6 +29,21 @@
     --card-radius: 16px;
     --font-head: 'Syne', sans-serif;
     --font-mono: 'DM Mono', monospace;
+    --shadow: none;
+  }
+
+  body.light-mode {
+    --bg: #f4f6f4;
+    --surface: #ffffff;
+    --surface2: #eef1ee;
+    --border: #d0d8d2;
+    --accent: #00a651;
+    --accent2: #007a3d;
+    --warn: #e07b00;
+    --danger: #d32f2f;
+    --text: #1a1f1a;
+    --muted: #5a6b60;
+    --shadow: 0 1px 4px rgba(0,0,0,0.08);
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -36,6 +51,7 @@
   body {
     background: var(--bg);
     color: var(--text);
+    transition: background 0.3s, color 0.3s;
     font-family: var(--font-mono);
     min-height: 100vh;
     max-width: 480px;
@@ -55,6 +71,7 @@
     top: 0;
     z-index: 100;
     background: rgba(13,15,14,0.92);
+    transition: background 0.3s;
     backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border);
   }
@@ -541,6 +558,7 @@
     width: 100%;
     max-width: 480px;
     background: rgba(13,15,14,0.96);
+    transition: background 0.3s;
     backdrop-filter: blur(16px);
     border-top: 1px solid var(--border);
     display: flex;
@@ -573,6 +591,22 @@
   }
   .nav-item:hover .nav-scan { transform: translateY(-4px); box-shadow: 0 4px 24px rgba(0,230,118,0.5); }
   .nav-scan-wrap { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+
+  body.light-mode .app-header {
+    background: rgba(244,246,244,0.95) !important;
+  }
+  body.light-mode .nav-bar {
+    background: rgba(244,246,244,0.97) !important;
+  }
+  body.light-mode .logo-wordmark .w1 { color: var(--text); }
+  body.light-mode .logo-icon circle,
+  body.light-mode .logo-icon path { transition: fill 0.3s, stroke 0.3s; }
+  body.light-mode .scan-zone { background: var(--surface); }
+  body.light-mode .camera-btn.secondary { background: var(--surface2); }
+  body.light-mode .result-card,
+  body.light-mode .product-group,
+  body.light-mode .history-item,
+  body.light-mode .settings-card { box-shadow: var(--shadow); }
 
   /* ── LOADING OVERLAY ── */
   .loading-overlay {
@@ -644,7 +678,7 @@
   <div class="logo">
     <svg class="logo-icon" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
       <!-- Tag body: visible fill + bright stroke -->
-      <path d="M14,40 L30,14 L66,14 L66,66 L30,66 Z" fill="#1e2a24" stroke="#4a6055" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M14,40 L30,14 L66,14 L66,66 L30,66 Z" fill="var(--surface2)" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round" opacity="0.9"/>
       <!-- Tag notch hole -->
       <circle cx="21" cy="40" r="5" fill="#0d0f0e" stroke="#4a6055" stroke-width="1.5"/>
       <!-- Price lines (muted white) -->
@@ -654,7 +688,7 @@
       <rect x="32" y="39" width="27" height="9" rx="3" fill="#00e676" opacity="0.18"/>
       <line x1="34" y1="43" x2="57" y2="43" stroke="#00e676" stroke-width="2.5" stroke-linecap="round"/>
       <!-- Camera lens outer ring (accent green) -->
-      <circle cx="57" cy="21" r="18" fill="#0d2018" stroke="#00e676" stroke-width="2"/>
+      <circle cx="57" cy="21" r="18" fill="var(--surface)" stroke="var(--accent)" stroke-width="2"/>
       <!-- Lens mid ring -->
       <circle cx="57" cy="21" r="12" fill="#0d1a14" stroke="#1a3d2a" stroke-width="1.2"/>
       <!-- Lens inner -->
@@ -673,7 +707,10 @@
       <span class="w2">Snap</span>
     </div>
   </div>
-  <button class="settings-btn" onclick="switchPage('settings')">⚙️</button>
+  <div style="display:flex;gap:8px;align-items:center">
+    <button class="settings-btn" id="themeToggleBtn" onclick="toggleTheme()" title="Toggle light/dark mode">🌙</button>
+    <button class="settings-btn" onclick="switchPage('settings')">⚙️</button>
+  </div>
 </header>
 
 <!-- TABS (for Scan page sub-states) -->
@@ -695,6 +732,8 @@
       <div class="store-chip" onclick="selectStore(this,'Sheng Siong')">Sheng Siong</div>
       <div class="store-chip" onclick="selectStore(this,'7-Eleven')">7-Eleven</div>
       <div class="store-chip" onclick="selectStore(this,'Cheers')">Cheers</div>
+      <div class="store-chip" onclick="selectStore(this,'523 Main')">523 Main</div>
+      <div class="store-chip" onclick="selectStore(this,'523 Sub')">523 Sub</div>
     </div>
     <input type="text" class="store-input" id="customStore" placeholder="Or type store name…" oninput="setCustomStore(this.value)">
 
@@ -778,6 +817,10 @@
     <div class="filter-chip" onclick="filterHistory('Cold Storage',this)">Cold Storage</div>
     <div class="filter-chip" onclick="filterHistory('Giant',this)">Giant</div>
     <div class="filter-chip" onclick="filterHistory('Sheng Siong',this)">Sheng Siong</div>
+    <div class="filter-chip" onclick="filterHistory('7-Eleven',this)">7-Eleven</div>
+    <div class="filter-chip" onclick="filterHistory('Cheers',this)">Cheers</div>
+    <div class="filter-chip" onclick="filterHistory('523 Main',this)">523 Main</div>
+    <div class="filter-chip" onclick="filterHistory('523 Sub',this)">523 Sub</div>
   </div>
   <div id="historyList"></div>
 </div>
@@ -1270,7 +1313,32 @@ function showToast(msg) {
   setTimeout(() => t.classList.remove('show'), 2800);
 }
 
+// ── THEME ──
+function toggleTheme() {
+  const body = document.body;
+  const btn = document.getElementById('themeToggleBtn');
+  if (body.classList.contains('light-mode')) {
+    body.classList.remove('light-mode');
+    btn.textContent = '🌙';
+    localStorage.setItem('pricesnap_theme', 'dark');
+    document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0f0e');
+  } else {
+    body.classList.add('light-mode');
+    btn.textContent = '☀️';
+    localStorage.setItem('pricesnap_theme', 'light');
+    document.querySelector('meta[name="theme-color"]').setAttribute('content', '#f4f6f4');
+  }
+}
+
 // ── INIT ──
+(function() {
+  const saved = localStorage.getItem('pricesnap_theme');
+  if (saved === 'light') {
+    document.body.classList.add('light-mode');
+    document.getElementById('themeToggleBtn').textContent = '☀️';
+    document.querySelector('meta[name="theme-color"]').setAttribute('content', '#f4f6f4');
+  }
+})();
 switchPage('history');
 </script>
 </body>
