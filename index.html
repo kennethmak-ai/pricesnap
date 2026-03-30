@@ -749,14 +749,14 @@
       <img id="previewImg" alt="preview">
       <!-- Camera input — opens camera directly -->
       <input type="file" id="cameraInput" accept="image/*" capture="environment" onchange="handleImage(event)" style="display:none">
-      <!-- Gallery input — opens photo library -->
-      <input type="file" id="galleryInput" accept="image/*" onchange="handleImage(event)" style="display:none">
+      <!-- Gallery input — NO capture attribute, opens photo library only -->
+      <input type="file" id="galleryInput" accept="image/*, image/jpeg, image/png, image/webp" onchange="handleImage(event)" style="position:absolute;left:-9999px;top:-9999px;opacity:0;width:1px;height:1px">
     </div>
 
     <button class="camera-btn" onclick="document.getElementById('cameraInput').click()" style="margin-top:12px">
       📷 Take Photo
     </button>
-    <button class="camera-btn secondary" onclick="document.getElementById('galleryInput').click()" style="margin-top:8px">
+    <button class="camera-btn secondary" onclick="openGallery()" style="margin-top:8px">
       🖼️ Upload from Gallery
     </button>
     <button class="camera-btn secondary" id="analyseBtn" onclick="analyseImage()" style="margin-top:8px;display:none">
@@ -1000,7 +1000,7 @@ Extract and return ONLY a valid JSON object with these fields:
 If you cannot read a field clearly, use null. Do not include markdown or code fences, just raw JSON.`;
 
   try {
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -1319,6 +1319,18 @@ function showToast(msg) {
   t.textContent = msg;
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ── GALLERY OPENER (delayed to prevent Android camera hijack) ──
+function openGallery() {
+  const input = document.getElementById('galleryInput');
+  // Remove and re-add the element to force fresh state (prevents Android capture bug)
+  const parent = input.parentNode;
+  const clone = input.cloneNode(true);
+  clone.onchange = handleImage;
+  parent.removeChild(input);
+  parent.appendChild(clone);
+  setTimeout(() => clone.click(), 100);
 }
 
 // ── THEME ──
