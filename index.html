@@ -740,18 +740,24 @@
     <input type="text" class="store-input" id="customStore" placeholder="Or type store name…" oninput="setCustomStore(this.value)">
 
     <div class="section-label" style="margin-top:16px">Product Photo</div>
-    <div class="scan-zone" id="scanZone" onclick="document.getElementById('fileInput').click()">
+    <div class="scan-zone" id="scanZone" onclick="document.getElementById('cameraInput').click()">
       <div class="scan-placeholder" id="scanPlaceholder">
         <div class="scan-icon">🏷️</div>
-        <strong>Tap to take photo or upload</strong>
+        <strong>Tap to take photo or upload image</strong>
         <p>Point at a price tag, shelf label, or product packaging</p>
       </div>
       <img id="previewImg" alt="preview">
-      <input type="file" id="fileInput" accept="image/*" capture="environment" onchange="handleImage(event)">
+      <!-- Camera input — opens camera directly -->
+      <input type="file" id="cameraInput" accept="image/*" capture="environment" onchange="handleImage(event)" style="display:none">
+      <!-- Gallery input — opens photo library -->
+      <input type="file" id="galleryInput" accept="image/*" onchange="handleImage(event)" style="display:none">
     </div>
 
-    <button class="camera-btn" onclick="document.getElementById('fileInput').click()" style="margin-top:12px">
+    <button class="camera-btn" onclick="document.getElementById('cameraInput').click()" style="margin-top:12px">
       📷 Take Photo
+    </button>
+    <button class="camera-btn secondary" onclick="document.getElementById('galleryInput').click()" style="margin-top:8px">
+      🖼️ Upload from Gallery
     </button>
     <button class="camera-btn secondary" id="analyseBtn" onclick="analyseImage()" style="margin-top:8px;display:none">
       🔍 Analyse Price Tag
@@ -994,7 +1000,7 @@ Extract and return ONLY a valid JSON object with these fields:
 If you cannot read a field clearly, use null. Do not include markdown or code fences, just raw JSON.`;
 
   try {
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -1116,6 +1122,8 @@ function saveEntry() {
   document.getElementById('previewImg').style.display = 'none';
   document.getElementById('scanPlaceholder').style.display = 'block';
   document.getElementById('analyseBtn').style.display = 'none';
+  document.getElementById('cameraInput').value = '';
+  document.getElementById('galleryInput').value = '';
   document.getElementById('scanZone').classList.remove('has-image');
   currentImage = null;
   currentResult = null;
