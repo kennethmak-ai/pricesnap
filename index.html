@@ -747,10 +747,8 @@
         <p>Point at a price tag, shelf label, or product packaging</p>
       </div>
       <img id="previewImg" alt="preview">
-      <!-- Camera input — opens camera directly -->
+      <!-- Camera input only — gallery input is created dynamically in JS -->
       <input type="file" id="cameraInput" accept="image/*" capture="environment" onchange="handleImage(event)" style="display:none">
-      <!-- Gallery input — NO capture attribute, opens photo library only -->
-      <input type="file" id="galleryInput" accept="image/*, image/jpeg, image/png, image/webp" onchange="handleImage(event)" style="position:absolute;left:-9999px;top:-9999px;opacity:0;width:1px;height:1px">
     </div>
 
     <button class="camera-btn" onclick="document.getElementById('cameraInput').click()" style="margin-top:12px">
@@ -761,6 +759,9 @@
     </button>
     <button class="camera-btn secondary" id="analyseBtn" onclick="analyseImage()" style="margin-top:8px;display:none">
       🔍 Analyse Price Tag
+    </button>
+    <button class="camera-btn secondary" id="cancelBtn" onclick="cancelScan()" style="margin-top:8px;display:none;border-color:var(--danger);color:var(--danger)">
+      ✕ Cancel
     </button>
   </div>
 
@@ -966,6 +967,7 @@ function handleImage(e) {
     document.getElementById('scanPlaceholder').style.display = 'none';
     document.getElementById('scanZone').classList.add('has-image');
     document.getElementById('analyseBtn').style.display = 'flex';
+    document.getElementById('cancelBtn').style.display = 'flex';
   };
   reader.readAsDataURL(file);
 }
@@ -1000,7 +1002,7 @@ Extract and return ONLY a valid JSON object with these fields:
 If you cannot read a field clearly, use null. Do not include markdown or code fences, just raw JSON.`;
 
   try {
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`, {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -1122,8 +1124,8 @@ function saveEntry() {
   document.getElementById('previewImg').style.display = 'none';
   document.getElementById('scanPlaceholder').style.display = 'block';
   document.getElementById('analyseBtn').style.display = 'none';
+  document.getElementById('cancelBtn').style.display = 'none';
   document.getElementById('cameraInput').value = '';
-  document.getElementById('galleryInput').value = '';
   document.getElementById('scanZone').classList.remove('has-image');
   currentImage = null;
   currentResult = null;
@@ -1321,16 +1323,37 @@ function showToast(msg) {
   setTimeout(() => t.classList.remove('show'), 2800);
 }
 
+// ── CANCEL SCAN ──
+function cancelScan() {
+  currentImage = null;
+  currentResult = null;
+  document.getElementById('previewImg').style.display = 'none';
+  document.getElementById('previewImg').src = '';
+  document.getElementById('scanPlaceholder').style.display = 'block';
+  document.getElementById('analyseBtn').style.display = 'none';
+  document.getElementById('cancelBtn').style.display = 'none';
+  document.getElementById('scanZone').classList.remove('has-image');
+  document.getElementById('resultCard').classList.remove('visible');
+  document.getElementById('cameraInput').value = '';
+  switchPage('history');
+}
+
 // ── GALLERY OPENER (delayed to prevent Android camera hijack) ──
 function openGallery() {
-  const input = document.getElementById('galleryInput');
-  // Remove and re-add the element to force fresh state (prevents Android capture bug)
-  const parent = input.parentNode;
-  const clone = input.cloneNode(true);
-  clone.onchange = handleImage;
-  parent.removeChild(input);
-  parent.appendChild(clone);
-  setTimeout(() => clone.click(), 100);
+  // Create a completely new input element, never attached near capture inputs
+  // This is the only reliable way to open gallery on Android without triggering camera
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  // Explicitly do NOT set capture attribute
+  input.style.cssText = 'position:fixed;top:-200%;left:-200%;opacity:0;';
+  input.onchange = handleImage;
+  document.body.appendChild(input);
+  input.click();
+  // Clean up after selection
+  setTimeout(() => {
+    if (document.body.contains(input)) document.body.removeChild(input);
+  }, 60000);
 }
 
 // ── THEME ──
